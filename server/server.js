@@ -18,7 +18,7 @@ app.get('/', function (req, res) {
 
 app.get('/getCars', function (req, res) {
     db.cars.getCars((cars) => {
-        res.send(response.makeSuccessResponse(cars, ["These are the cars"]));
+        res.send(response.makeSuccessResponse(cars, ["These are the cars", "Ain't they pretty!"]));
     });
 });
 
