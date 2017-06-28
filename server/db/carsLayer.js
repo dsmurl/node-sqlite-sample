@@ -27,17 +27,17 @@ function carsLayer(db) {
     }
 
     function createCar(year, model, color, callback) {
-        db.serialize(function () {
+        db.serialize(() => {
             let stmt = db.prepare("INSERT INTO cars VALUES (null, ?, ?, ?)");
             stmt.run(year, model, color);
             stmt.finalize();
 
-            var newId = -1;
+            let newId = -1;
             db.each("select * from sqlite_sequence where name='cars'; ",
-                function (err, row) {
+                (err, row) => {
                     newId = row.seq;
                 },
-                function() {
+                (err, rows) => {
                     if (callback) {
                         callback(getCarObject(newId, year, model, color));
                     }
@@ -46,33 +46,48 @@ function carsLayer(db) {
         });
     }
 
+    function removeCar(id, callback) {
+        db.serialize(() => {
+            getCar(id, (car) => {
+                if (car !== null) {
+                    let stmt = db.prepare("DELETE FROM cars WHERE id = ?");
+                    stmt.run(id);
+                    stmt.finalize();
+                }
+                if (callback) {
+                    callback(car);
+                }
+            });
+        });
+    }
+
     function getCar(id, callback) {
-        db.serialize(function () {
-            var targetCar = null;
+        db.serialize(() => {
+            let targetCar = null;
             db.each("SELECT * FROM cars where id = ?", id,
-                function (err, row) {
+                (err, row) => {
                     targetCar = row;
                 },
-                function (err, rows) {
-                    callback(targetCar);
+                (err, rows) => {
+                    if (callback) {
+                        callback(targetCar);
+                    }
                 }
             );
         });
     }
 
-    function printCars() {
+    function getCars(callback) {
         db.serialize(function () {
-            var cars = [];
+            const cars = [];
             db.each("SELECT * FROM cars",
-                function (err, row) {
-                    cars.push(row.id + ": " + row.year + ", " + row.model + ", " + row.color);
+                (err, row) => {
+                    cars.push(row);
                 },
-                function () {
-                    console.log("Cars");
-                    console.log("----------");
-                    cars.forEach(function (car) {
-                        console.log(car);
-                    });
+                (err, rows) => {
+                    if (callback) {
+                        callback(cars);
+                    }
                 }
             );
         });
@@ -80,8 +95,9 @@ function carsLayer(db) {
 
     return {
         createCar: createCar,
+        removeCar: removeCar,
         getCar: getCar,
-        printCars: printCars,
+        getCars: getCars,
     }
 }
 

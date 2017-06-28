@@ -1,27 +1,61 @@
-var dbLayer = require('./db/dbLayer.js');
-var check;
+const dbLayer = require('./db/dbLayer.js');
+const express = require('express');
+const response = require('./util/response');
 
-var db = dbLayer('cars.db');
+const app = express();
+const db = dbLayer('cars.db');
 
-var createdNewCar = function(newCar) {
-    console.log("Made New Car: ", newCar);
-};
-
-console.log("createCars");
-db.cars.createCar(1968, "Cougar", "Red", createdNewCar);
-db.cars.createCar(2013, "Infinity", "Black", createdNewCar);
-db.cars.createCar(1998, "Ranger", "Blue", createdNewCar);
-db.cars.createCar(1977, "F150", "Black");
-
-db.cars.getCar(2, function(car) {
-    console.log("Found car: ", car);
+app.get('/', function (req, res) {
+    res.send(
+        '<body>' +
+        'Calls:<br/>' +
+        '/getCars<br/>' +
+        '/createCar?year=1111&model=superCar&color=Red<br/>' +
+        '/removeCar?id=12<br/>' +
+        '</body>'
+    );
 });
 
-
-db.cars.getCar(5, function(car) {
-    console.log("Found car: ", car);
+app.get('/getCars', function (req, res) {
+    db.cars.getCars((cars) => {
+        res.send(response.makeSuccessResponse(cars, ["These are the cars"]));
+    });
 });
 
-db.cars.printCars();
+app.get('/createCar', function (req, res) {
+    const year = req.query.year;
+    const model = req.query.model;
+    const color = req.query.color;
 
-db.close();
+    if (year && model && color) {
+        db.cars.createCar(parseInt(year), model, color, (car) => {
+            res.send(car ?
+                response.makeSuccessResponse(car, ["Made a car"]) :
+                response.makeFailResponse(['Could not make car'])
+            );
+        });
+    } else {
+        response.makeFailResponse(['Could not make car']);
+    }
+});
+
+app.get('/removeCar', function (req, res) {
+    const id = req.query.id;
+
+    if (id) {
+        db.cars.removeCar(parseInt(id), (car) => {
+            res.send(car ?
+                    response.makeSuccessResponse(car, ["Removed a car"]) :
+                response.makeFailResponse(['Could not remove car'])
+            );
+        });
+    } else {
+        response.makeFailResponse(['Could not remove car']);
+    }
+});
+
+app.listen(3000, function () {
+    console.log('Example app listening on port 3000!');
+});
+
+// db.close();

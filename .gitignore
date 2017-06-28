@@ -4,3 +4,4 @@ server/public
 node_modules
 *.env
 *.db
+*.log
