@@ -9,9 +9,9 @@ app.get('/', function (req, res) {
     res.send(
         '<body>' +
         'Calls:<br/>' +
-        '/getCars<br/>' +
-        '/createCar?year=1111&model=superCar&color=Red<br/>' +
-        '/removeCar?id=12<br/>' +
+        '<a href="/getCars">/getCars</a><br/>' +
+        '<a href="/createCar?year=1111&model=superCar&color=Red">/createCar?year=1111&model=superCar&color=Red</a><br/>' +
+        '<a href="/removeCar?id=12">/removeCar?id=12</a><br/>' +
         '</body>'
     );
 });
